@@ -10,14 +10,16 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:boomer-formatter.helloWorld"
+    "*"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "boomer-formatter.helloWorld",
-        "title": "Hello World"
+        "command": "boomer-formatter.format",
+        "category": "Format",
+        "title": "Format like a boomer",
+        "when": "resourceExtname == '.scss'"
       }
     ]
   },
@@ -27,12 +29,12 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
-    "test": "jest"
+    "test": "jest",
+    "build": "npm run compile"
   },
   "devDependencies": {
     "@types/glob": "^7.1.4",
     "@types/jest": "^27.0.2",
-    "@types/mocha": "^9.0.0",
     "@types/node": "14.x",
     "@types/vscode": "^1.62.0",
     "@typescript-eslint/eslint-plugin": "^5.1.0",
