@@ -1,23 +1,26 @@
 import * as vscode from "vscode";
+import Formatter from "./formatter";
 
-export function activate(context: vscode.ExtensionContext) {
-  const disposable = vscode.commands.registerCommand(
-    "boomer-formatter.format",
-    () => {
-      const { activeTextEditor } = vscode.window;
-      if (!activeTextEditor || !activeTextEditor.document.languageId) return;
+export function activate() {
+  vscode.commands.registerCommand("boomer-formatter.format", () => {
+    const { activeTextEditor } = vscode.window;
+    if (!activeTextEditor || !activeTextEditor.document.languageId) return;
+    const { document } = activeTextEditor;
 
-      const { document } = activeTextEditor;
-      const firstLine = document.lineAt(0);
+    if (document.languageId !== "scss") return;
 
-      if (firstLine.text !== "42") {
-        const edit = new vscode.WorkspaceEdit();
-        edit.insert(document.uri, firstLine.range.start, "42\n");
+    var start = new vscode.Position(0, 0);
+    var end = new vscode.Position(
+      document.lineCount - 1,
+      document.lineAt(document.lineCount - 1).text.length
+    );
+    var range = new vscode.Range(start, end);
+    var content = document.getText(range);
 
-        return vscode.workspace.applyEdit(edit);
-      }
-    }
-  );
+    const formatter = new Formatter(content);
 
-  context.subscriptions.push(disposable);
+    activeTextEditor.edit((edit) => {
+      edit.replace(range, formatter.process());
+    });
+  });
 }
