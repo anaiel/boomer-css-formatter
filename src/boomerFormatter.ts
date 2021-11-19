@@ -88,11 +88,14 @@ class Formatter {
         continue;
       }
 
-      if (
-        prevChar &&
-        prevChar !== "}" &&
-        (prevChar !== "\r" || prevPrevChar !== "}")
-      )
+      let j = i - 1;
+      while (j > 0 && declarations.charAt(j) !== "\n") j--;
+      let prevLine = declarations.slice(
+        j,
+        declarations.charAt(i - 1) === "\r" ? i - 1 : i
+      );
+
+      if (prevChar && prevLine.includes("{") && !prevLine.endsWith("}"))
         nesting += indent;
       if (nextChar === "}") nesting = nesting.slice(0, -1 * indent.length);
       nestedText += char + nesting;
