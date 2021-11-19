@@ -22,11 +22,22 @@ class Formatter {
   _splitDeclarations(): [string, string] {
     let i = 0;
     while (true) {
+      const current = this.formattedText.slice(i);
+      const afterCurrent = this.formattedText.slice(i + 1);
       if (
-        this.formattedText.slice(i).startsWith("@import") ||
-        this.formattedText.slice(i).startsWith("$")
+        current.startsWith("@import") ||
+        current.startsWith("$") ||
+        current.startsWith("//") ||
+        current.startsWith("/*")
       ) {
         while (this.formattedText.charAt(i) !== "\n") i++;
+      } else if (
+        afterCurrent.startsWith("@import") ||
+        afterCurrent.startsWith("$") ||
+        afterCurrent.startsWith("//") ||
+        afterCurrent.startsWith("/*")
+      ) {
+        i++;
       } else {
         break;
       }
