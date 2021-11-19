@@ -1,0 +1,38 @@
+@import "../../scss/Variables.scss";
+
+.card-entry {
+    padding: 24px;
+    background: #fff;
+    @include borderRadius;
+    border: 1px solid $colorPrimary;
+    a {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        > div {
+        }
+        .img {
+            max-width: 185px;
+            margin: -100px auto 0 auto;
+            img {
+                width: 100%;
+                height: auto;
+            }
+        }
+        .content {
+            text-align: center;
+            position: relative;
+            h2 {
+                font-size: 1em;
+                margin: 8px 0;
+                font-weight: 600;
+            }
+            p {
+                font-size: 1em;
+            }
+        }
+        .btn {
+            margin: 16px auto 0 auto;
+        }
+    }
+}

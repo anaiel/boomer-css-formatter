@@ -15,7 +15,7 @@ class Formatter {
   }
 
   _removeStartOfLineWhitespace(): Formatter {
-    this.formattedText = this.formattedText.replace(/(\n|\r\n) +/g, "$1");
+    this.formattedText = this.formattedText.replace(/\n +/g, "\n");
     return this;
   }
 
@@ -26,12 +26,7 @@ class Formatter {
         this.formattedText.slice(i).startsWith("@import") ||
         this.formattedText.slice(i).startsWith("$")
       ) {
-        while (
-          this.formattedText.charAt(i) !== "\n" &&
-          (this.formattedText.charAt(i) !== "\r" ||
-            this.formattedText.charAt(i + 1) !== "\n")
-        )
-          i++;
+        while (this.formattedText.charAt(i) !== "\n") i++;
       } else {
         break;
       }
@@ -39,33 +34,41 @@ class Formatter {
     return [this.formattedText.slice(0, i), this.formattedText.slice(i)];
   }
 
+  replaceEOL(): Formatter {
+    this.formattedText = this.formattedText.replace(/\r\n/g, "\n");
+    return this;
+  }
+
   removeEOL(): Formatter {
-    this.formattedText = this.formattedText
-      .replace(/\r\n/g, "")
-      .replace(/\n/g, "");
+    this.formattedText = this.formattedText.replace(/(?<!\/\/[^\n]*?)\n/g, "");
     return this._removeMultipleWhitespace();
   }
 
   insertEOLBeforeDeclaration(): Formatter {
     let updated = this.formattedText.replace(
       /(\{|\}|;) *([^;\}\{\n]+?) *\{/g,
-      `$1${this._eol}$2 {`
+      "$1\n$2 {"
     );
     while (updated !== this.formattedText) {
       this.formattedText = updated;
       updated = this.formattedText.replace(
         /(\{|\}|;) *([^;\}\{\n]+?) *\{/g,
-        `$1${this._eol}$2 {`
+        "$1\n$2 {"
       );
     }
     return this;
   }
 
   insertEOLAfterClosingBlock(): Formatter {
-    this.formattedText = this.formattedText.replace(
-      /\}(?![\n|\r\n])/g,
-      "}" + this._eol
-    );
+    this.formattedText = this.formattedText.replace(/\}(?!\n)/g, "}\n");
+    this.formattedText = this.formattedText
+      .split("\n")
+      .map((line) => {
+        if (line.endsWith("}") && !line.includes("{") && line.trim() !== "}")
+          return line.replace("}", "\n}");
+        return line;
+      })
+      .join("\n");
     return this._removeMultipleWhitespace()._removeStartOfLineWhitespace();
   }
 
@@ -77,7 +80,6 @@ class Formatter {
     const [importBlock, declarations] = this._splitDeclarations();
 
     for (let i = 0; i < declarations.length; i++) {
-      const prevPrevChar = i >= 2 ? declarations.charAt(i - 2) : undefined;
       const prevChar = i >= 1 ? declarations.charAt(i - 1) : undefined;
       const char = declarations.charAt(i);
       const nextChar =
@@ -90,10 +92,7 @@ class Formatter {
 
       let j = i - 1;
       while (j > 0 && declarations.charAt(j) !== "\n") j--;
-      let prevLine = declarations.slice(
-        j,
-        declarations.charAt(i - 1) === "\r" ? i - 1 : i
-      );
+      let prevLine = declarations.slice(j, i);
 
       if (prevChar && prevLine.includes("{") && !prevLine.endsWith("}"))
         nesting += indent;
@@ -107,9 +106,37 @@ class Formatter {
 
   addEOLInImports(): Formatter {
     const [imports, declarations] = this._splitDeclarations();
-    const formattedImports = imports.replace(/;/g, ";" + this._eol);
+    const formattedImports = imports.replace(/;/g, ";\n");
     this.formattedText = formattedImports + declarations;
     return this;
+  }
+
+  handleCommentBlock(): Formatter {
+    this.formattedText = this.formattedText
+      .split("\n")
+      .map((line) => {
+        let i = 0;
+        while (i < line.length && line.charAt(i) === " ") i++;
+        const indent = line.slice(0, i);
+        const content = line.slice(i);
+
+        let updated = content.replace(
+          /(\/\*.*?\*\/) */g,
+          `\n${indent}$1\n${indent}`
+        );
+        if (updated.startsWith("\n")) updated = updated.slice(1);
+        if (updated.endsWith("\n")) updated = updated.slice(0, -1);
+        updated = updated.replace(/\n+/g, "\n");
+        if (!updated.startsWith(indent)) updated = indent + updated;
+
+        return updated;
+      })
+      .join("\n");
+    return this;
+  }
+
+  resetEOL(): void {
+    this.formattedText = this.formattedText.replace(/\n/g, this._eol);
   }
 }
 
@@ -117,11 +144,14 @@ const boomerFormatter = (originalText: string, eol: string): string => {
   const formatter = new Formatter(originalText, eol);
 
   formatter
+    .replaceEOL()
     .removeEOL()
     .insertEOLBeforeDeclaration()
     .insertEOLAfterClosingBlock()
     .addNesting()
-    .addEOLInImports();
+    .addEOLInImports()
+    .handleCommentBlock()
+    .resetEOL();
 
   return formatter.formattedText;
 };
