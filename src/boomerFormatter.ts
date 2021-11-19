@@ -9,76 +9,93 @@ class Formatter {
     this.formattedText = this._originalText;
   }
 
-  removeWhitespace() {
+  _removeMultipleWhitespace(): Formatter {
+    this.formattedText = this.formattedText.replace(/ +/g, " ");
+    return this;
+  }
+
+  _removeStartOfLineWhitespace(): Formatter {
+    this.formattedText = this.formattedText.replace(/(\n|\r\n) +/g, "$1");
+    return this;
+  }
+
+  _splitDeclarations(): [string, string] {
+    let i = 0;
+    while (true) {
+      if (this.formattedText.slice(i).startsWith("@import")) {
+        while (
+          this.formattedText.charAt(i) !== "\n" &&
+          (this.formattedText.charAt(i) !== "\r" ||
+            this.formattedText.charAt(i + 1) !== "\n")
+        )
+          i++;
+      } else {
+        break;
+      }
+    }
+    return [this.formattedText.slice(0, i), this.formattedText.slice(i)];
+  }
+
+  removeEOL(): Formatter {
     this.formattedText = this.formattedText
-      .replace(/ /g, "")
       .replace(/\r\n/g, "")
       .replace(/\n/g, "");
-    return this;
+    return this._removeMultipleWhitespace();
   }
 
-  insertEOLBeforeDeclaration() {
-    this.formattedText = this.formattedText.replace(
-      /([;|\}])(?!\})([^;]+?)\{/g,
-      `$1${this._eol}$2{`
+  insertEOLBeforeDeclaration(): Formatter {
+    let updated = this.formattedText.replace(
+      /(\{|\}|;) *([^;\}\{\n]+?) *\{/g,
+      `$1${this._eol}$2 {`
     );
+    while (updated !== this.formattedText) {
+      this.formattedText = updated;
+      updated = this.formattedText.replace(
+        /(\{|\}|;) *([^;\}\{\n]+?) *\{/g,
+        `$1${this._eol}$2 {`
+      );
+    }
     return this;
   }
 
-  insertEOLAfterClosingBlock() {
+  insertEOLAfterClosingBlock(): Formatter {
     this.formattedText = this.formattedText.replace(
       /\}(?![\n|\r\n])/g,
       "}" + this._eol
     );
-    return this;
+    return this._removeMultipleWhitespace()._removeStartOfLineWhitespace();
   }
 
-  addNesting() {
+  addNesting(): Formatter {
     const indent = "    ";
     let nesting = "";
     let nestedText = "";
 
-    for (let i = 0; i < this.formattedText.length; i++) {
-      const prevPrevChar =
-        i >= 2 ? this.formattedText.charAt(i - 2) : undefined;
-      const prevChar = i >= 1 ? this.formattedText.charAt(i - 1) : undefined;
-      const char = this.formattedText.charAt(i);
+    const [importBlock, declarations] = this._splitDeclarations();
+
+    for (let i = 0; i < declarations.length; i++) {
+      const prevPrevChar = i >= 2 ? declarations.charAt(i - 2) : undefined;
+      const prevChar = i >= 1 ? declarations.charAt(i - 1) : undefined;
+      const char = declarations.charAt(i);
       const nextChar =
-        i < this.formattedText.length - 1
-          ? this.formattedText.charAt(i + 1)
-          : undefined;
+        i < declarations.length - 1 ? declarations.charAt(i + 1) : undefined;
 
       if (char !== "\n") {
         nestedText += char;
         continue;
       }
 
-      if (prevChar !== "}" && (prevChar !== "\r" || prevPrevChar !== "}"))
+      if (
+        prevChar &&
+        prevChar !== "}" &&
+        (prevChar !== "\r" || prevPrevChar !== "}")
+      )
         nesting += indent;
       if (nextChar === "}") nesting = nesting.slice(0, -1 * indent.length);
       nestedText += char + nesting;
     }
 
-    this.formattedText = nestedText;
-    return this;
-  }
-
-  addSpacingBeforeBrace() {
-    this.formattedText = this.formattedText
-      .replace(/\{/g, " {")
-      .replace(/(?<![\n|\r\n| ])\}/g, " }");
-    return this;
-  }
-
-  addSpacingAfterBrace() {
-    this.formattedText = this.formattedText
-      .replace(/\{(?![\n|\r\n])/g, "{ ")
-      .replace(/\}(?![\n|\r\n])/g, "} ");
-    return this;
-  }
-
-  separateDeclarations() {
-    this.formattedText = this.formattedText.replace(/;(?![\n|\r\n| ])/g, "; ");
+    this.formattedText = importBlock + this._eol + nestedText;
     return this;
   }
 }
@@ -87,13 +104,10 @@ const boomerFormatter = (originalText: string, eol: string): string => {
   const formatter = new Formatter(originalText, eol);
 
   formatter
-    .removeWhitespace()
+    .removeEOL()
     .insertEOLBeforeDeclaration()
     .insertEOLAfterClosingBlock()
-    .addNesting()
-    .addSpacingBeforeBrace()
-    .addSpacingAfterBrace()
-    .separateDeclarations();
+    .addNesting();
 
   return formatter.formattedText;
 };
