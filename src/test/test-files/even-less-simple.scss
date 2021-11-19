@@ -1,0 +1,277 @@
+$bg-orange: #ffe5bf;
+$bg-grey: #e9e8e8;
+$sticker-green: #009e0f;
+$sticker-red: #FF6138;
+@import "../../../scss/Variables.scss";
+
+.classrooms-details-container {
+
+
+    .classroom-title {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        h1 {
+            color: var(--color-primary);
+            border-bottom: 2px solid var(--color-primary);
+            
+            .idle{
+                span{
+                    &.icon{
+                        color: $colorPrimary;
+                    }
+                }
+            }
+            .edit{
+                input{
+                    width: 150px;
+                    padding: 0 8px;
+                    background: none;
+                    border: none;
+                    font-size: 1em;
+                    color: $colorPrimary;
+                    font-weight: inherit;
+                }
+                button{
+                    &:nth-child(2){
+                        margin: 0 8px 0 0;
+                        .icon { 
+                            color: $colorCorrect;
+                        }
+                    }
+                    &:nth-child(3){
+                        .icon { 
+                            color: #FF6138;
+                        }
+                    }
+                }
+            }
+            .saving{
+                width: 50px;
+                height: 35px;
+                position: relative;
+                .evb-spinner__container{
+                    width: auto;
+                    height: auto;
+                    right: auto;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%,-50%) scale(40%);
+                }
+            }
+            
+        }
+        .classCode {
+            display: flex;
+            margin: 0 0 0 32px;
+            align-items: center;
+            .code {
+                font-family: "Roboto-Light";
+                color: #6d6d6d;
+                font-size: 1.7em;
+                border-bottom: 2px solid #6d6d6d;
+                padding-bottom: 4px;
+            }
+            .tool-tip {
+                position: relative;
+                margin: 0 0 0 8px;
+                .text {
+                    display: none;
+                    position: absolute;
+                    right: -295px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 250px;
+                    background-color: #6d6d6d;
+                    color: white;
+                    padding: 16px;
+                    border-radius: 10px;
+                    z-index: 10;
+                    text-align: center;
+                    &:before{
+                        content:'';
+                        position: absolute;
+                        left: -10px;
+                        top: 50%;
+                        transform: translateY(-50%);
+                        width: 0;
+                        height: 0;
+                        border-style: solid;
+                        border-width: 7.5px 10px 7.5px 0;
+                        border-color: transparent #6d6d6d transparent transparent;
+                    }
+                }
+                &:hover {
+                    .text {
+                        display: block;
+                    }
+                }
+                .material-icons {
+                    color: #6d6d6d;
+                }
+            }
+        }
+    }
+
+    .modules-container{
+        display: flex;
+    }
+    
+    .classroom-details-cards-container {
+        display: flex;
+        flex-wrap: wrap;
+        max-width: 80%;
+        padding-top: 24px;
+        &.no-difficulties{
+            max-width: 100%;
+        }
+        .module-card {
+            display: flex;
+            flex-direction: column;
+            margin: 16px;
+
+            .card-title {
+                padding: 16px 16px 0 16px;
+                /* width: fit-content; */
+                width: 190px;
+                height: 55px;
+                background: #EEEEEE;
+                border-radius: 29px 29px 0px 0px;
+                box-shadow: 7px 8px 12px #e8e8e8;
+                font-size: 16px;
+                font-weight: bold;
+                color: #2f3e4e;
+            }
+                
+            .body {
+                padding: 25px;
+                width: 250px;
+                margin-right: 15px;
+                background: #EEEEEE;
+                border-radius: 0px 29px 29px 29px;
+                box-shadow: 7px 8px 12px #e8e8e8;
+                border: none;
+
+                .progression {
+                    margin-top: 30px;
+
+                    .icon {
+                        position: relative;
+                        top: 7px;
+                        margin-right: 10px;
+                    }
+
+                    .participants {
+                        font-weight: bold;
+                        margin-right: 5px;
+                        &:before {
+                            @include material-icons;
+                            content: "person";
+                            color: $colorPrimary;
+                            position: relative;
+                            top: 7px;
+                            margin-right: 10px;
+                            background-color: white;
+                            font-size: 18px;
+                            border-radius: 100%;
+                            padding: 4px 4px;
+                        }
+                    }
+
+                    .progression-state {
+                        border-left: 2px solid skyblue;
+                        margin-top: 15px;
+                        padding-left: 15px;
+                        margin-left: 11px;
+                        > div {
+                            display: flex;
+                            margin-bottom: 16px;
+                        }
+                        .progression-difficulties {
+                            &:before {
+                                @include material-icons;
+                                content: "error";
+                                color: #FF6138;
+                                position: relative;
+                                top: 7px;
+                                margin-right: 10px;
+                            }
+                        }
+
+                        .progression-improved {
+                            margin-bottom: 15px;
+                            &:before {
+                                @include material-icons;
+                                content: "circle";
+                                color: rgb(31, 177, 31);
+                                position: relative;
+                                top: 7px;
+                                margin-right: 10px;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .students-with-difficulties {
+        border: 3px solid #FF6138;
+        border-radius: 29px;
+        width: 20%;
+        max-width: 300px;
+        margin-top: 24px;
+        align-self: flex-start; 
+        .title {
+            border-bottom: 2px solid #FF6138;
+            padding: 8px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            span{
+                margin-right: 8px;
+                color: #FF6138;
+            }
+        }
+
+        .student-list {
+            padding: 15px;
+            a {
+                display: flex;
+                align-items: center;  
+                height: 32px; 
+                padding: 8px 0;
+                > span {
+                    &:first-child {
+                        color: #FF6138;
+                        background-color: #E6E6E6;
+                        border-radius: 100%;
+                        padding: 4px 4px;
+                    }
+                }
+                .name{
+                    display: flex;
+                    flex-direction: column;
+                    margin-left: 8px;
+                    span:last-child {
+                        display: none;
+                        align-items: center;
+                        font-size: 13px;
+                    }
+                }
+                &:hover {
+                    .name{
+                        span:first-child { 
+                            padding: 0 0 2px 0; 
+                        }
+                        span:last-child {
+                            display: flex;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+}

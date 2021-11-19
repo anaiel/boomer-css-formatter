@@ -22,7 +22,10 @@ class Formatter {
   _splitDeclarations(): [string, string] {
     let i = 0;
     while (true) {
-      if (this.formattedText.slice(i).startsWith("@import")) {
+      if (
+        this.formattedText.slice(i).startsWith("@import") ||
+        this.formattedText.slice(i).startsWith("$")
+      ) {
         while (
           this.formattedText.charAt(i) !== "\n" &&
           (this.formattedText.charAt(i) !== "\r" ||
@@ -95,7 +98,14 @@ class Formatter {
       nestedText += char + nesting;
     }
 
-    this.formattedText = importBlock + this._eol + nestedText;
+    this.formattedText = importBlock + nestedText;
+    return this;
+  }
+
+  addEOLInImports(): Formatter {
+    const [imports, declarations] = this._splitDeclarations();
+    const formattedImports = imports.replace(/;/g, ";" + this._eol);
+    this.formattedText = formattedImports + declarations;
     return this;
   }
 }
@@ -107,7 +117,8 @@ const boomerFormatter = (originalText: string, eol: string): string => {
     .removeEOL()
     .insertEOLBeforeDeclaration()
     .insertEOLAfterClosingBlock()
-    .addNesting();
+    .addNesting()
+    .addEOLInImports();
 
   return formatter.formattedText;
 };
