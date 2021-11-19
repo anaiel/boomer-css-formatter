@@ -1,0 +1,16 @@
+.some-class {
+  color: black;
+  background-color: white;
+
+  .some-other-class {
+    color: yellow;
+
+    .yet-another-class {
+      color: blue;
+    }
+  }
+
+  .heres-another-one {
+    color: green;
+  }
+}
